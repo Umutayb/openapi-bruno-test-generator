@@ -1,0 +1,6 @@
+/node_modules
+/collections
+master-collection.json
+/Petstore Regression Tests
+package-lock.json
+test-collection.json

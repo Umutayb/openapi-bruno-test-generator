@@ -1,0 +1,27 @@
+{
+    "name": "Petstore Regression Tests",
+    "description": "Collection of test flows testing various components of Petstore backend services.",
+    "test_flows": [
+        {
+            "flow_name": "Create User Account",
+            "seq": 1,
+          "root": {
+            "request": {
+              "auth": {
+                "mode": "inherit"
+              }
+            },
+            "meta": {
+              "name": "Account creation",
+              "seq": 52
+            }
+          },
+            "requests": [
+                {
+                    "request_id": "Creates list of users with given input array",
+                    "seq": 1
+                }
+            ]
+        }
+    ]
+}

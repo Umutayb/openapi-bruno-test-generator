@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@usebruno/converters": "^0.8.0",
+    "@usebruno/filestore": "^0.4.0"
+  }
+}
