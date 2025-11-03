@@ -260,12 +260,25 @@ async function acquireBrunoRequestByName(requestName, folderName, brunoCollectio
   }
 }
 
+/**
+ * Recursively searches a Bruno collection structure for an HTTP request with the specified name.
+ * 
+ * @param {string} requestName - The exact name of the HTTP request to locate
+ * @param {Object} brunoCollection - The current collection or folder node to search within
+ * @returns {Object|null} Returns the matching HTTP request object if found, or null if no match exists
+ * 
+ * The function traverses the collection hierarchy by:
+ * 1. Checking each item in the current collection
+ * 2. Returning immediately if an HTTP request with the target name is found
+ * 3. Recursively searching nested folders if they exist
+ * 4. Returning null if the end of the hierarchy is reached without finding a match
+ */
 function findRequestByName(requestName, brunoCollection) {
   for (const item of brunoCollection.items) {
 
-    if (item.type === 'http-request' && item.name === requestName) 
+    if (item.type === 'http-request' && item.name === requestName)
       return item;
-    
+
     else if (item.type === 'folder') {
       const found = findRequestByName(requestName, item);
       if (found) {
@@ -463,7 +476,7 @@ async function createEnvironments(testCollection, masterDir) {
       await fs.writeFile(bruFilePath, stringifyEnvironment(environment, options = { format: 'bru' }));
     }
   else
-    console.warn("Test collection has no environments.")  
+    console.warn("Test collection has no environments.")
 }
 
 /**
