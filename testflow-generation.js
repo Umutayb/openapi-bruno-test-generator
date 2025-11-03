@@ -540,7 +540,7 @@ async function createBrunoCollection(testFlowsDir, masterCollectionDir, outputNa
  * from specification to structured bruno collections, enabling a streamlined testing workflow.
  */
 async function testGenerationPipeline() {
-  await convertOpenAupdateRequestBodiespiToBruno("oas", "collections");
+  await convertOpenApiToBruno("oas", "collections");
   await mergeOpenApiCollections("Petstore", "collections", "master-collection.json");
   await createBrunoCollection("test-flows.json", "master-collection.json", "test-collection.json");
 }
