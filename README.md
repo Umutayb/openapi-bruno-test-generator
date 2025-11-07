@@ -1,68 +1,181 @@
-# Test Flow Generation Module
+# 🧩 OpenAPI → Bruno Converter & Test Runner
 
-This module automates the generation of structured Bruno test collections from OpenAPI specifications and test flow definitions. It streamlines the process of creating comprehensive and organized test suites for your APIs.
+This project automates the conversion of **OpenAPI specifications** into **Bruno-compatible collections**, merges them, and generates structured **test collections** based on defined test flows.
+Finally, tests can be executed directly via the **Bruno CLI**.
 
-## Features
+---
 
-* **OpenAPI to Bruno Conversion:** Converts OpenAPI specifications into individual Bruno collections.
-* **Collection Merging:** Merges multiple OpenAPI collections into a unified master collection.
-* **Test Flow Composition:** Creates structured Bruno collections using test flow definitions, populated with requests from merged OpenAPI collections.
-* **Automated Directory Structure:** Generates a well-organized directory structure for your Bruno test collections.
-* **Environment Configuration:** Supports the creation of environment configuration files in .bru format.
+## 📦 Features
 
-## Prerequisites
+* ✅ Convert OpenAPI specs (`.json`) to Bruno format
+* 🧠 Automatically inject OpenAPI example request bodies
+* 🗂 Merge multiple Bruno collections into a master collection
+* ⚙️ Generate Bruno test flows from a `test-flows.json` definition
+* 🧪 Run generated tests directly with **Bruno CLI**
 
-* Node.js (version 16 or higher)
-* npm (Node Package Manager)
+---
 
-## Installation
+## 🧰 Prerequisites
 
-1.  Clone or download the repository.
-2.  Navigate to the project directory.
-3.  Install the dependencies:
+* **Node.js** ≥ 18
+* **Bruno CLI** (`bru`) installed globally
 
-    ```bash
-    npm install
-    ```
+  ```bash
+  npm install -g @usebruno/cli
+  ```
+* **@usebruno/converters** and **@usebruno/filestore**:
 
-## Usage
+  ```bash
+  npm install @usebruno/converters @usebruno/filestore
+  ```
 
-1.  **Prepare your OpenAPI specifications:** Ensure you have valid OpenAPI specification files (e.g., `oas/openapi.yaml`).
-2.  **Define your test flows:** Create a `test-flows.json` file that defines the structure and composition of your test flows.  This file specifies which requests from the merged OpenAPI collections should be included in each test flow.
-3.  **Run the test generation script:**
+---
 
-    ```bash
-    node testflow-generation.js
-    ```
+## 📁 Project Structure
 
-This script will:
+Example layout before running the converter:
 
-*   Convert the OpenAPI specifications to Bruno collections.
-*   Merge the individual collections into a master collection.
-*   Create a structured Bruno test collection based on your `test-flows.json` definition.
-*   Generate the necessary directory structure and files.
+```
+project/
+├── oas/
+│   ├── user-api.json
+│   ├── booking-api.json
+│   └── payments-api.json
+├── test-flows.json
+├── converter.js
+└── package.json
+```
 
-## File Structure
+After running, new files will be generated:
 
-After running the script, the following files and directories will be created:
+```
+project/
+├── collections/               # Converted OAS → Bruno files
+│   ├── user-api.json
+│   ├── booking-api.json
+│   └── payments-api.json
+├── master-collection.json     # Merged Bruno collection
+├── test-collection.json       # Combined test definition
+└── RegressionTests/           # Final structured Bruno test collection
+    ├── collection.bru
+    ├── bruno.json
+    ├── environments/
+    │   └── test-environment.bru
+    ├── check-in-flow/
+    │   ├── Step1.bru
+    │   ├── Step2.bru
+    │   └── Step3.bru
+```
 
-*   `collections/`: Contains the individual Bruno collections generated from the OpenAPI specifications.
-*   `master-collection.json`:  The merged master collection.
-*   `test-collection.json`: The final structured Bruno collection.
-*   `test-collection/`: A directory containing the generated test flow files, environment configurations, and Bruno metadata.
-    *   `collection.bru`: Root file for Bruno collection
-    *   `bruno.json`: Bruno metadata
-    *   `environments/`: Contains environment configuration files (.bru)
-    *   Test flow directories with individual .bru request files.
+---
 
-## Configuration
+## ⚙️ Usage
 
-The script currently uses hardcoded paths for the OpenAPI specifications and test flow definitions.  Future enhancements may include configuration options to customize these paths.
+### 1. Prepare your OpenAPI files
 
-## Contributing
+Place your **OpenAPI JSON specs** inside the `/oas` folder.
+Each file should represent one API domain or microservice.
 
-Contributions are welcome! Please submit pull requests with clear descriptions of your changes.
+Example:
 
-## License
+```bash
+oas/
+├── users.json
+├── orders.json
+└── payments.json
+```
 
-[MIT License](LICENSE)
+---
+
+### 2. Define your test flows
+
+Create a `test-flows.json` that defines how requests should be chained into test scenarios.
+
+Example:
+
+```json
+{
+  "name": "RegressionTests",
+  "root": { "name": "Sample API", "type": "collection" },
+  "environments": [
+    { "name": "test-environment", "vars": { "base_url": "https://api.test.example.com" } }
+  ],
+  "test_flows": [
+    {
+      "flow_name": "check-in-flow",
+      "seq": 1,
+      "root": { "name": "check-in-flow" },
+      "requests": [
+        { "request_id": "CreateBooking", "file_path": "booking-api", "seq": 1 },
+        { "request_id": "GetBooking", "file_path": "booking-api", "seq": 2 },
+        { "request_id": "ConfirmBooking", "file_path": "booking-api", "seq": 3 }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### 3. Run the converter
+
+Run the main pipeline script:
+
+```bash
+node testflow-generation.js
+```
+
+This executes the following steps:
+
+1. Converts OpenAPI → Bruno (`oas/` → `collections/`)
+2. Merges all Bruno files (in `collections/`) into a single master collection (`master-collection.json`)
+3. Builds test flows and creates the structured test collection folder (`RegressionTests/`)
+
+---
+
+## 🧪 Running Tests with Bruno CLI
+
+Once the conversion pipeline completes, you can execute your generated test collection with:
+
+```bash
+bru run check-in-flow --env "test-environment"
+```
+
+This runs the **“check-in-flow”** using the environment named **“test-environment”**.
+
+---
+
+## 🧭 Full Pipeline Summary
+
+| Stage | Function                                       | Description                                                      |
+| ----- | ---------------------------------------------- | ---------------------------------------------------------------- |
+| 1️⃣   | `convertOpenApiToBruno()`                      | Converts each OpenAPI spec into Bruno collection format          |
+| 2️⃣   | `mergeOpenApiCollections()`                    | Merges all converted Bruno collections into a single master file |
+| 3️⃣   | `createBrunoCollection()`                      | Builds structured Bruno test flows & environments                |
+| 4️⃣   | `testGenerationPipeline()`                     | Runs all steps end-to-end automatically                          |
+| 5️⃣   | `bru run check-in-flow --env test-environment` | Executes generated Bruno tests                                   |
+
+---
+
+## 🧾 Example Command Flow
+
+```bash
+# Step 1: Generate test collection
+node converter.js
+
+# Step 2: Run Bruno tests
+bru run check-in-flow --env "test-environment"
+```
+
+---
+
+## 🧩 Notes
+
+* Ensure all `operationId` fields in your OpenAPI specs match request names.
+* Example JSON bodies will automatically populate from OpenAPI `examples`.
+* Logs will show ✅ for successful conversions and ❌ for any issues.
+* Generated `.bru` files, or the test directory (`RegressionTests/`), can be opened directly in **Bruno App** for inspection.
+
+---
+
+Would you like me to make the anonymized version use **generic environment and flow names** (like `staging-environment`, `order-processing-flow`) instead of the current `test-environment` / `check-in-flow`? That would make it even more reusable for publishing.
